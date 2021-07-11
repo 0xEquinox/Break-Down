@@ -6,72 +6,53 @@ import os.path
 from datetime import date, datetime, timedelta
 
 filename = "tasks.csv"
-header = ['Task Name', 'Estimated Time', 'Due Date', 'Daily']
+header = ['Task Name', 'Estimated Time', 'Days Left', 'Daily', 'Recorded Date', 'Assignment Due Date', 'Is Completed']
 
 def start(names, estimated_time, due_date):
 
-    today_date = date.today()
-    data = {"Task Name": names, "Estimated Time": estimated_time, "Due Date": due_date, "Daily": break_down(estimated_time, due_date)}
+    today = datetime.today()
+    assignment_due_date = datetime.today() + timedelta(days=due_date)
 
-    if os.path.isfile("C:\\Users\\Drago\\TaskManager\\tasks.csv"):
-        with open("C:\\Users\\Drago\\TaskManager\\tasks.csv", 'a', newline='') as myfile:
+    data = {"Task Name": names, "Estimated Time": estimated_time, "Days Left": due_date, "Daily": break_down(estimated_time, due_date), 'Recorded Date': today, 'Assignment Due Date': assignment_due_date, 'Is Completed': False}
+
+    if os.path.isfile("tasks.csv"):
+        with open("tasks.csv", 'a', newline='') as myfile:
             wr = csv.DictWriter(myfile, quoting=csv.QUOTE_ALL, fieldnames=header)
             wr.writerow(data)
     else:
-        with open("C:\\Users\\Drago\\TaskManager\\tasks.csv", 'a', newline='') as myfile:
+        with open("tasks.csv", 'a', newline='') as myfile:
             wr = csv.DictWriter(myfile, quoting=csv.QUOTE_ALL, fieldnames=header)
             wr.writeheader()
             wr.writerow(data)
 
 
 def break_down(estimated_time, days_till_due):
-    return float(estimated_time/days_till_due)
-
-def add():         
-    names = str(input("Enter task name: "))
-    estimated_time = float(input("Enter estimated time to complete task: "))
-    due_date = float(input("Enter days until due: "))
-    start(names, estimated_time, due_date)
-    more= str(input("Do you have more assignments?"))
-    if more == "yes":
-        add()
-    else:
-        user_input()
-
-def user_input():
-    user = str(input("Enter Command: "))
-
-    if user == 'add':
-        add()
-    elif user == 'sort by date':
-        sort_by_date()
-    elif user == 'sort by time':
-        sort_by_time()
+    return int(estimated_time/days_till_due)
 
 
-def sort_by_date():
+def check_tasks():
+    csvFile = pd.read_csv('tasks.csv')
+    print(csvFile)
+    find_task = str(input("Enter completed task name: "))
+    ans = str(input("Are you sure you want to remove" + find_task +"? Once removed, changes cannot be undone."))
+    if ans == 'yes':
+        print(csvFile.drop(csvFile[csvFile['Task Name'] == find_task].index))
 
-    csvFile = pd.read_csv("C:\\Users\\Drago\\TaskManager\\tasks.csv")
+
+def sort_by_break_down():
+    csvFile = pd.read_csv("tasks.csv")
 
     print(csvFile)
 
-    sortedByDate = csvFile.sort_values(by=["Due Date"], ascending=True)
-    sortedByDate.to_csv("C:\\Users\\Drago\\TaskManager\\tasks.csv", index=False)
+    sortedByDaily = csvFile.sort_values(by=['Daily'], ascending=True)
+    sortedByDaily.to_csv("tasks.csv", index=False)
 
-    print(sortedByDate)
+    print(sortedByDaily)
 
+def today():
     
-def sort_by_time():
-
-    csvFile = pd.read_csv("C:\\Users\\Drago\\TaskManager\\tasks.csv")
-
+    csvFile = pd.read_csv("tasks.csv", usecols=['Task Name', 'Daily'])
     print(csvFile)
 
-    sortedByDate = csvFile.sort_values(by=["Estimated Time"], ascending=False)
-    sortedByDate.to_csv("C:\\Users\\Drago\\TaskManager\\tasks.csv", index=False)
-
-    print(sortedByDate)
 
 
-
-user_input()
